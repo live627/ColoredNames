@@ -13,6 +13,16 @@ class ColoredNames
 {
 	protected $old_preload = null;
 	protected $picker = null;
+	
+	static function init()
+	{
+		return new self();
+	}
+
+	public function __construct()
+	{
+		$this->picker = new StylePicker();
+	}
 
 	public static function load_profile_fields(&$fields)
 	{
@@ -205,7 +215,7 @@ function profileSaveColoredNames(&$value)
 	$styles = array();
 	$validator = new Data_Validator();
 
-	foreach (ColoredNames::known_style_attributes() as $name => $values)
+	foreach (this->picker->getAttributes() as $name => $values)
 	{
 		$post = isset($_POST['colored_names_vals'][$name]) ? trim($_POST['colored_names_vals'][$name]) : '';
 		if ($post !== '')
