@@ -11,76 +11,25 @@
 
 class ColoredNames
 {
-	public static $old_preload = null;
-
-	public static function known_style_attributes()
-	{
-		return array(
-			'color' => array(
-				'value' => '',
-				'type' => 'color',
-				'validate' => 'color',
-			),
-			'background' => array(
-				'value' => '',
-				'type' => 'color',
-				'validate' => 'color',
-			),
-			'font-size' => array(
-				'value' => '',
-				'type' => 'select',
-				'values' => array('', '4px', '6px', '8px', '10px', '12px', '14px'),
-			),
-			'border-style' => array(
-				'value' => '',
-				'type' => 'select',
-				'values' => array('none', 'hidden', 'dotted', 'dashed', 'solid', 'double', 'groove', 'ridge', 'inset', 'outset', 'initial', 'inherit'),
-			),
-			'border-width' => array(
-				'value' => '',
-				'type' => 'text',
-				'validate' => function($val) {
-					if (preg_match('~^((\d+)|(\d+\.\d+))([a-z]{1,3}|%)$~', $val, $matches))
-						return $val;
-					else
-						return '';
-				},
-			),
-			'border-color' => array(
-				'value' => '',
-				'type' => 'color',
-				'validate' => 'color',
-			),
-			'border-radius' => array(
-				'value' => '',
-				'type' => 'text',
-				'validate' => function($val) {
-					if (preg_match('~^((((\d+)|(\d+\.\d+))([a-z]{1,3}|%)\s){0,3}((\d+)|(\d+\.\d+))([a-z]{1,3}|%))(\s*/\s*(((\d+)|(\d+\.\d+))([a-z]{1,3}|%) ){0,3}((\d+)|(\d+\.\d+))([a-z]{1,3}|%)){0,1}$~', $val, $matches))
-						return $val;
-					else
-						return '';
-				},
-			),
-		);
-	}
+	protected $old_preload = null;
+	protected $picker = null;
 
 	public static function load_profile_fields(&$fields)
 	{
 		// Let's be nice to other addons
 		if (isset($fields['real_name']['preload']))
-			ColoredNames::$old_preload = $fields['real_name']['preload'];
+			$this->old_preload = $fields['real_name']['preload'];
 
-		$fields['real_name']['preload'] = create_function('', '
-			global $cur_profile, $context;
+		$fields['real_name']['preload'] = function() use ($cur_profile)
+		{
+			if (trim($cur_profile['plain_real_name']) !== '')
+				$cur_profile['real_name'] = $cur_profile['plain_real_name'];
 
-			if (trim($cur_profile[\'plain_real_name\']) !== \'\')
-				$cur_profile[\'real_name\'] = $cur_profile[\'plain_real_name\'];
-
-			if (ColoredNames::$old_preload !== null)
-				return ColoredNames::$old_preload();
+			if ($this->old_preload !== null)
+				return $this->old_preload();
 			else
 				return true;
-		');
+		}
 
 		$fields['plain_real_name'] = array(
 			'type' => 'hidden',
